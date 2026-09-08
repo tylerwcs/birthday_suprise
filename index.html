@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <title>Happy Birthday</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8E%82%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Caveat:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js" } }
+  </script>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+
+  <div id="cover" class="pending">
+    <div class="cover-title">
+      <span class="en"></span>
+      <span class="zh"></span>
+    </div>
+    <div class="cover-sub"></div>
+  </div>
+
+  <div id="intro" hidden>
+    <div class="intro-lines"></div>
+    <div class="intro-hint"></div>
+  </div>
+
+  <div id="loading">
+    <div class="msg">正在打开回忆…</div>
+    <div class="track"><div class="bar"></div></div>
+  </div>
+
+  <button id="prev" class="arrow" aria-label="上一张" hidden>‹</button>
+  <button id="next" class="arrow" aria-label="下一张" hidden>›</button>
+  <button id="music" class="round" aria-label="音乐" hidden>♪</button>
+  <div id="caption" aria-live="polite"></div>
+  <div id="hint" hidden>点一下翻面 · 左右滑动换页</div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

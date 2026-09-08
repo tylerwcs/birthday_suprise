@@ -1,0 +1,9 @@
+{
+  "name": "polaroid-memory-book",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "dev": "npx --yes serve -l 5173 ."
+  }
+}

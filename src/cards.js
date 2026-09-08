@@ -77,17 +77,20 @@ export function drawPhoto(image, size) {
 export function drawBack(text, size) {
   const c = canvasFor(size), ctx = c.getContext('2d');
   paper(ctx, '#f4ecd8');
-  const m = c.width * 0.09;
+  const landscape = c.width > c.height;          // 横卡竖向空间小：边距和行距收紧，字号相对短边算
+  const base = Math.min(c.width, c.height);
+  const m = c.width * (landscape ? 0.05 : 0.09);
+  const heartH = base * 0.09;
   if (text) {
     drawParagraph(ctx, text, {
-      x: c.width / 2, y: m, maxWidth: c.width - m * 2, maxHeight: c.height - m * 2 - c.width * 0.08,
-      fontSize: c.width * 0.064, minFontSize: c.width * 0.034, lineHeight: 1.65, color: '#4a3f35', font: FONTS.zh,
+      x: c.width / 2, y: m * 0.7, maxWidth: c.width - m * 2, maxHeight: c.height - m * 0.7 - heartH,
+      fontSize: base * 0.064, minFontSize: base * 0.04, lineHeight: landscape ? 1.45 : 1.65, color: '#4a3f35', font: FONTS.zh,
     });
   }
   ctx.fillStyle = 'rgba(160,80,80,0.55)';
-  ctx.font = `${c.width * 0.055}px ${FONTS.en}`;
+  ctx.font = `${base * 0.055}px ${FONTS.en}`;
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('♡', c.width / 2, c.height - m * 0.8);
+  ctx.fillText('♡', c.width / 2, c.height - heartH * 0.55);
   return c;
 }
 

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import content from '../content.js';
 import { cardSizeFor, loadFonts, drawPhoto, drawBack, drawEnding, createCardMesh } from './cards.js';
 import { createCake } from './cake.js';
-import { startMic, createBlowMeter, createAudioContext } from './blow.js';
+import { startMic, warmUpMic, createBlowMeter, createAudioContext } from './blow.js';
 import { createNavigation } from './navigation.js';
 import { layoutFor, lerpPose } from './stack.js';
 import { attachGestures } from './gestures.js';
@@ -205,18 +205,25 @@ async function main() {
     audio.preload = 'auto';
     audio.addEventListener('error', () => { audio = null; musicBtn.hidden = true; });
   }
+  let musicWanted = false; // 她没有主动静音时为 true：被系统打断（比如麦克风打开）就自动续播
   function startMusic() {
     if (!audio || musicStarted) return;
     musicStarted = true;
+    musicWanted = true;
     audio.play()
       .then(() => { musicBtn.hidden = false; musicBtn.classList.remove('off'); })
-      .catch(() => { musicBtn.hidden = false; musicBtn.classList.add('off'); });
+      .catch(() => { musicWanted = false; musicBtn.hidden = false; musicBtn.classList.add('off'); });
   }
+  function resumeMusic() {
+    if (audio && musicWanted && audio.paused && !document.hidden) audio.play().catch(() => {});
+  }
+  audio?.addEventListener('pause', () => { setTimeout(resumeMusic, 400); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) setTimeout(resumeMusic, 300); });
   musicBtn.addEventListener('click', e => {
     e.stopPropagation();
     if (!audio) return;
-    if (audio.paused) { audio.play().catch(() => {}); musicBtn.classList.remove('off'); }
-    else { audio.pause(); musicBtn.classList.add('off'); }
+    if (audio.paused) { musicWanted = true; audio.play().catch(() => {}); musicBtn.classList.remove('off'); }
+    else { musicWanted = false; audio.pause(); musicBtn.classList.add('off'); }
   });
 
   // ---------- UI ----------
@@ -286,11 +293,13 @@ async function main() {
     const mic = await startMic(audioCtx);
     if (blowing !== mine) { mic?.stop(); return; }   // 等麦克风期间已经划走了
     if (mic) { mine.mic = mic; showCaption(content.cake.hint); }
+    setTimeout(resumeMusic, 400); // 打开麦克风可能让系统暂停音乐，补一次续播
   }
   function stopBlowing() {
     blowing?.mic?.stop();
     blowing = null;
     cake.setWind(0);
+    setTimeout(resumeMusic, 300); // 关掉麦克风后音频会话切回来，补一次续播
   }
   function updateBlowing(dt) {
     if (!blowing) return;
@@ -531,6 +540,8 @@ async function main() {
     coverEl.classList.add('hide');
     if (introLines) showIntro();
     else beginDeck();
+    // 一开始就把麦克风权限要好（然后立刻关掉），蛋糕页再开就不会弹框、不会打断音乐
+    warmUpMic().then(() => setTimeout(resumeMusic, 300));
   }, { once: true });
 
   loadingEl.classList.add('hide');

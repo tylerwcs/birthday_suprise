@@ -53,6 +53,21 @@ export function createAudioContext() {
   return ctx;
 }
 
+/**
+ * 提前申请一次麦克风权限然后立刻关掉：让权限框出现在开场（音乐还没响的时候），
+ * 之后蛋糕页再打开麦克风就不会再弹框、也不会打断音乐。返回是否授权。
+ */
+export async function warmUpMic() {
+  if (!navigator.mediaDevices?.getUserMedia) return false;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream.getTracks().forEach(t => t.stop());
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /** 打开麦克风，返回 { level(): 0..1, stop() }；不可用或被拒绝时返回 null */
 export async function startMic(sharedCtx = null) {
   if (!navigator.mediaDevices?.getUserMedia) return null;

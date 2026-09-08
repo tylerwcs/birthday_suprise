@@ -261,10 +261,11 @@ async function main() {
 
   /** 键盘 / 按钮 / 自动前进用的整页翻页 */
   function go(step) {
-    if (carousel.grabbing || flipping) return;
-    if (carousel.active) return;
+    if (carousel.grabbing || flipping || letterOpen) return;
+    if (carousel.active) nav.finish();            // 过渡途中再按：接管，带着当前速度继续
     const a = step > 0 ? nav.next() : nav.prev();
-    if (a) transitionTo(a.to);
+    if (a) transitionTo(a.to, carousel.velocity);
+    else if (carousel.active) nav.lock();         // 到头了，让进行中的过渡继续把状态机占着
   }
 
   // ---------- 吹蜡烛 ----------
@@ -362,6 +363,7 @@ async function main() {
         nav.finish();
       }
       if (carousel.active) return;
+      if (current().kind === 'ending') { openLetter(); return; }
       const a = nav.flip();
       if (a) flip(a);
     },
@@ -422,7 +424,8 @@ async function main() {
     cake.update(dt);
     updateBlowing(dt);
     if (carousel.active) {
-      const settled = carousel.step(dt);
+      // 弹簧按真实时间推进（上限 0.25s），低帧率下过渡时长也不变
+      const settled = carousel.step(Math.min(0.25, elapsedMs / 1000));
       renderAt(carousel.position);
       if (settled) onSettled();
     }
@@ -447,6 +450,37 @@ async function main() {
   coverEl.classList.remove('pending');
   prevBtn.hidden = nextBtn.hidden = true;
   nav.lock(); // 封面期间不响应翻页
+  // ---------- 结尾信纸 ----------
+  const letterEl = $('#letter');
+  let letterOpen = false;
+  function openLetter() {
+    const lines = content.ending.text.split('\n');
+    const box = letterEl.querySelector('.letter-lines');
+    const closeBtn = letterEl.querySelector('.letter-close');
+    letterEl.querySelector('.letter-title').textContent = content.ending.title;
+    closeBtn.textContent = content.ending.close || '收起';
+    box.innerHTML = '';
+    let t = 900;
+    lines.forEach(line => {
+      const span = document.createElement('span');
+      span.textContent = line;
+      span.style.setProperty('--d', `${t}ms`);
+      box.appendChild(span);
+      t += line ? 650 : 250;
+    });
+    closeBtn.classList.remove('show');
+    letterEl.hidden = false;
+    letterEl.classList.remove('hide');
+    letterEl.scrollTop = 0;
+    letterOpen = true;
+    setTimeout(() => closeBtn.classList.add('show'), t + 400);
+  }
+  letterEl.querySelector('.letter-close').addEventListener('click', () => {
+    letterEl.classList.add('hide');
+    letterOpen = false;
+    setTimeout(() => { if (!letterOpen) letterEl.hidden = true; }, 800);
+  });
+
   // ---------- 前言页 ----------
   const introEl = $('#intro');
   const introLines = content.intro?.lines?.length ? content.intro.lines : null;

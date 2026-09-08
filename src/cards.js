@@ -111,19 +111,20 @@ export function drawCoverCard({ title, recipient, subtitle }, size) {
   return c;
 }
 
-/** 结尾祝福卡 */
-export function drawEnding({ title, text }, size) {
+/** 结尾卡：只有标题和"点一下读信"的提示，正文在全屏信纸页里 */
+export function drawEnding({ title, hint = '点一下，读这封信' }, size) {
   const c = canvasFor(size), ctx = c.getContext('2d');
   paper(ctx, '#f4ecd8');
-  ctx.fillStyle = '#b3554f';
-  ctx.font = `${c.width * 0.12}px ${FONTS.zh}`;
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(title, c.width / 2, c.height * 0.12);
-  const m = c.width * 0.08;
-  drawParagraph(ctx, text, {
-    x: c.width / 2, y: c.height * 0.21, maxWidth: c.width - m * 2, maxHeight: c.height * 0.74,
-    fontSize: c.width * 0.06, minFontSize: c.width * 0.026, lineHeight: 1.6, color: '#4a3f35', font: FONTS.zh,
-  });
+  ctx.fillStyle = '#b3554f';
+  ctx.font = `${c.width * 0.17}px ${FONTS.zh}`;
+  ctx.fillText(title, c.width / 2, c.height * 0.42);
+  ctx.fillStyle = '#7a6a5c';
+  ctx.font = `${c.width * 0.058}px ${FONTS.zh}`;
+  ctx.fillText(hint, c.width / 2, c.height * 0.56);
+  ctx.fillStyle = 'rgba(160,80,80,0.55)';
+  ctx.font = `${c.width * 0.06}px ${FONTS.en}`;
+  ctx.fillText('♡', c.width / 2, c.height * 0.9);
   return c;
 }
 

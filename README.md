@@ -13,7 +13,7 @@
   - 照片放进 `photos/` 文件夹，建议长边 1000-1600px；卡片形状跟随照片比例
   - `caption` 是正面底部一行小字，`text` 是背面的话，用 `\n` 换行
 - `cake`：吹蜡烛页。`candles` 蜡烛数量，`hint` / `holdHint` 是有无麦克风时的提示，`done` 是吹灭后停留显示的话（不会自动跳到下一页）
-- `ending`：最后一页的祝福
+- `ending`：最后一页。卡片上只有 `title` 和 `hint`，点一下打开全屏信纸，`text` 一行行浮现，`close` 是收起按钮的字
 - `music`：mp3 放进 `audio/`，这里填 `"audio/你的文件.mp3"`；不要音乐写 `null`
 
 ## 本地预览

@@ -16,13 +16,23 @@ export function rmsOf(samples) {
  * 音量高于 threshold 时进度上升，持续 fillSeconds 秒吹满；停下来会慢慢回落，
  * 但不会低于已经"吹灭"的那一档（steps 档），灭掉的蜡烛不会复燃。
  */
-export function createBlowMeter({ threshold = 0.045, fillSeconds = 0.8, decayPerSecond = 0.2, steps = 5 } = {}) {
+export function createBlowMeter({ threshold = 0.02, fillSeconds = 0.6, decayPerSecond = 0.15, steps = 5, calibrateSeconds = 0.7 } = {}) {
   let progress = 0;
+  // 自适应底噪：前 calibrateSeconds 秒里的安静采样求平均，触发线取"底噪的 2.2 倍 + 一点余量"和 threshold 中较大者
+  let calibrated = 0, floorSum = 0, floorN = 0, floor = 0;
+  const effectiveThreshold = () => Math.max(threshold, floor * 2.2 + 0.006);
   return {
     get progress() { return progress; },
+    get threshold() { return effectiveThreshold(); },
+    get floor() { return floor; },
     feed(level, dt) {
-      if (level > threshold) {
-        const strength = Math.min(1, (level - threshold) / (0.3 - threshold) + 0.5);
+      if (calibrated < calibrateSeconds) {
+        calibrated += dt;
+        if (level < 0.15) { floorSum += level; floorN += 1; floor = floorSum / floorN; }
+      }
+      const th = effectiveThreshold();
+      if (level > th) {
+        const strength = Math.min(1, (level - th) / (0.2 - th) + 0.6);
         progress += (dt / fillSeconds) * strength;
       } else {
         const committed = Math.floor(progress * steps + 1e-9) / steps;

@@ -272,6 +272,13 @@ async function main() {
   let blowing = null; // { mic, meter, holding, done }
   let audioCtx = null; // 在点封面的手势里创建，iOS 才允许之后读麦克风
   const cakeMeter = createBlowMeter({ steps: content.cake.candles, threshold: content.cake.threshold, fillSeconds: content.cake.blowSeconds }); // 跨次进入保留进度，灭掉的蜡烛不用重吹
+  // 网址加 ?debug 时在左上角显示麦克风读数，方便真机上调灵敏度
+  let debugEl = null;
+  if (location.search.includes('debug')) {
+    debugEl = document.createElement('div');
+    debugEl.style.cssText = 'position:fixed;top:8px;left:8px;z-index:20;font:12px/1.4 monospace;color:#fff;background:rgba(0,0,0,.55);padding:6px 8px;border-radius:6px;pointer-events:none;white-space:pre';
+    document.body.appendChild(debugEl);
+  }
   async function startBlowing() {
     blowing = { mic: null, meter: cakeMeter, holding: false, done: cakeMeter.progress >= 1 };
     const mine = blowing;
@@ -287,10 +294,14 @@ async function main() {
   }
   function updateBlowing(dt) {
     if (!blowing) return;
-    const level = blowing.holding ? 0.6 : (blowing.mic ? blowing.mic.level() : 0);
+    const micLevel = blowing.mic ? blowing.mic.level() : 0;
+    const level = blowing.holding ? Math.max(0.6, micLevel) : micLevel;
     const progress = blowing.meter.feed(level, dt);
-    cake.setWind(Math.min(1, level * 2.2));
+    cake.setWind(Math.min(1, (level / Math.max(0.05, blowing.meter.threshold * 3)) * 0.8));
     cake.setBlow(progress);
+    if (debugEl) {
+      debugEl.textContent = `mic ${blowing.mic ? 'on' : 'off'}  level ${micLevel.toFixed(3)}  floor ${blowing.meter.floor.toFixed(3)}  th ${blowing.meter.threshold.toFixed(3)}  progress ${(progress * 100).toFixed(0)}%`;
+    }
     if (progress >= 1 && !blowing.done) {
       blowing.done = true;
       showCaption(content.cake.done); // 停在这一页，由她自己划到下一页

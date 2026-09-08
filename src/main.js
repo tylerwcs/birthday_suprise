@@ -230,16 +230,20 @@ async function main() {
   });
 
   // ---------- UI ----------
-  let hintShown = false;
+  // 操作提示：到第一张时出现，一直留着，直到她第一次翻面或翻页
+  let hintDismissed = false;
+  function dismissHint() {
+    if (hintDismissed) return;
+    hintDismissed = true;
+    hintEl.classList.remove('show');
+  }
   function updateUI() {
     const { index } = nav.state;
     prevBtn.hidden = index === 0;
     nextBtn.hidden = index === total - 1;
-    if (index === 0 && !hintShown) {
-      hintShown = true;
+    if (index === 0 && !hintDismissed && hintEl.hidden) {
       hintEl.hidden = false;
       requestAnimationFrame(() => hintEl.classList.add('show'));
-      setTimeout(() => hintEl.classList.remove('show'), 3500);
     }
   }
 
@@ -253,6 +257,7 @@ async function main() {
     if (settledIndex >= 0) cards[settledIndex].flipAngle = cards[settledIndex].flipAngle > Math.PI / 2 ? Math.PI : 0;
     cards[to].flipAngle = 0;
     hideCaption();
+    if (settledIndex >= 0) dismissHint();          // 开场滑入不算，她自己翻页了才收提示
     carousel.transitionTo(to, initialVelocity);
   }
 
@@ -324,6 +329,7 @@ async function main() {
     const card = cards[index];
     const from = card.flipAngle, to = flipped ? Math.PI : 0;
     flipping = true;
+    dismissHint();
     if (!flipped) hideCaption();                    // 翻回文字面时把标题收起
     let revealed = false;
     await animate(720, ease.inOutCubic, t => {

@@ -433,7 +433,7 @@ async function main() {
     small.update(dt);
     big.update(dt);
     cake.update(dt);
-    updateBlowing(dt);
+    updateBlowing(Math.min(0.25, elapsedMs / 1000)); // 吹气进度按真实时间累积，低帧率也不吃亏
     if (carousel.active) {
       // 弹簧按真实时间推进（上限 0.25s），低帧率下过渡时长也不变
       const settled = carousel.step(Math.min(0.25, elapsedMs / 1000));

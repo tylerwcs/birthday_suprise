@@ -271,7 +271,7 @@ async function main() {
   // ---------- 吹蜡烛 ----------
   let blowing = null; // { mic, meter, holding, done }
   let audioCtx = null; // 在点封面的手势里创建，iOS 才允许之后读麦克风
-  const cakeMeter = createBlowMeter({ steps: content.cake.candles }); // 跨次进入保留进度，灭掉的蜡烛不用重吹
+  const cakeMeter = createBlowMeter({ steps: content.cake.candles, threshold: content.cake.threshold, fillSeconds: content.cake.blowSeconds }); // 跨次进入保留进度，灭掉的蜡烛不用重吹
   async function startBlowing() {
     blowing = { mic: null, meter: cakeMeter, holding: false, done: cakeMeter.progress >= 1 };
     const mine = blowing;

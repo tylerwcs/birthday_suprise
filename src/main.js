@@ -95,6 +95,9 @@ async function main() {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap; // PCF 才响应 shadow.radius 的柔化
 
+  // 网页一加载就申请麦克风权限（然后立刻释放）：授权框出现在封面之前，
+  // 之后点封面开音乐、蛋糕页开麦克风都不会再有权限框打断
+  warmUpMic();
   const images = await preload();
 
   // ---------- 场景 ----------
@@ -540,8 +543,6 @@ async function main() {
     coverEl.classList.add('hide');
     if (introLines) showIntro();
     else beginDeck();
-    // 一开始就把麦克风权限要好（然后立刻关掉），蛋糕页再开就不会弹框、不会打断音乐
-    warmUpMic().then(() => setTimeout(resumeMusic, 300));
   }, { once: true });
 
   loadingEl.classList.add('hide');
